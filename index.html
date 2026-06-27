@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Porter × Colloquial — Post-Production · Ryde</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" integrity="sha384-jZvDSsmGB9oGGT/4l9bHXGoAv1OxvG/cFmSo0dZaSqmBgvQTKDBFAMftlXTmMbNW" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
+<style>
+  :root{ color-scheme: dark;
+    --bg:#000; --ink:#fff; --muted:rgba(255,255,255,.55); --muted2:rgba(255,255,255,.40);
+    --line:rgba(255,255,255,.16); --line2:rgba(255,255,255,.08); --panel:#0A0A0A;
+    --blue:#1E40E6; --pink:#F21C9A;
+  }
+  *{box-sizing:border-box}
+  html,body{background:var(--bg)}
+  body{margin:0;color:var(--ink);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1200px;margin:0 auto;padding:22px 22px 40px;}
+  .top{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:14px;border-bottom:1px solid var(--ink);}
+  .brand{font-weight:800;font-size:26px;letter-spacing:-.5px}
+  .topright{font-weight:700;font-size:12px;letter-spacing:.18em;text-transform:uppercase;text-align:right}
+  .topright .stamp{display:block;font-weight:400;letter-spacing:.04em;color:var(--muted2);font-size:10.5px;margin-top:4px;text-transform:none}
+  .lead{margin:18px 0 6px;font-weight:800;font-size:30px;letter-spacing:-.6px;line-height:1.05}
+  .leadsub{color:var(--muted);font-size:12.5px;letter-spacing:.02em}
+  .sectitle{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:9px;border-bottom:1px solid var(--line);margin:0 0 14px}
+  .panel{background:var(--panel);border:1px solid var(--line2);border-radius:3px;padding:18px}
+  .kpis{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr 1fr;gap:0;margin:22px 0 6px;border:1px solid var(--line2);border-radius:3px;overflow:hidden}
+  .kpi{padding:18px;border-left:1px solid var(--line2)}
+  .kpi:first-child{border-left:0}
+  @media(max-width:780px){.kpis{grid-template-columns:1fr 1fr}.kpi{border-top:1px solid var(--line2)}}
+  .kpi .label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:700}
+  .kpi .val{font-size:34px;font-weight:800;letter-spacing:-1px;margin-top:8px;line-height:1}
+  .kpi .note{font-size:10.5px;color:var(--muted2);margin-top:6px}
+  .ring-kpi{display:flex;align-items:center;gap:14px}
+  .ring-kpi .txt .label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:700}
+  .ring-kpi .txt .note{font-size:10.5px;color:var(--muted2);margin-top:4px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:920px){.grid2{grid-template-columns:1fr}}
+  .chart-box{position:relative;height:300px}.chart-box.sm{height:235px}
+  .fb{display:flex;flex-direction:column;max-height:330px;overflow:auto}
+  .fb-item{padding:12px 0;border-top:1px solid var(--line2)}.fb-item:first-child{border-top:0}
+  .fb-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .fb-edit{font-weight:800;font-size:13px}
+  .fb-meta{font-size:10.5px;color:var(--muted2);letter-spacing:.03em}
+  .fb-comment{font-size:13px;margin:5px 0 7px;color:rgba(255,255,255,.88)}
+  .fb-bot{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .badge{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.1em;border:1px solid var(--line)}
+  .b-open{color:#fff;background:var(--pink);border-color:var(--pink)}
+  .b-res{color:var(--muted);border-color:var(--line2)}
+  a.flink{font-size:11px;color:#fff;text-decoration:none;border-bottom:1px solid var(--line)}
+  a.flink:hover{border-color:#fff}
+  .empty{color:var(--muted2);font-size:12.5px;padding:10px 0}
+  .err{border:1px solid rgba(255,255,255,.3);color:#fff;padding:14px 16px;border-radius:3px;font-size:13px;background:#0A0A0A;line-height:1.5}
+  .loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12.5px;padding:40px 2px;letter-spacing:.04em}
+  .spin{width:15px;height:15px;border:2px solid var(--line2);border-top-color:var(--blue);border-radius:50%;animation:s .8s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .full{margin-top:16px}
+  .pill{display:inline-block;min-width:46px;text-align:center;padding:2px 7px;border-radius:3px;font-weight:800;font-size:11px;border:1px solid var(--line2)}
+  .foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--ink);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .foot div{font-size:11px;letter-spacing:.06em;color:var(--muted)}
+  .foot .c{font-weight:700;color:var(--ink)}
+  .reload{cursor:pointer;background:none;border:1px solid var(--line);color:#fff;border-radius:3px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;font-weight:700}
+  .reload:hover{border-color:#fff}
+  #tableWrap .gridjs-wrapper{box-shadow:none;border:1px solid var(--line2);border-radius:3px;background:var(--bg)}
+  #tableWrap table.gridjs-table{background:var(--bg)}
+  #tableWrap .gridjs-th{background:var(--bg);color:var(--muted);border-color:var(--line2);font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+  #tableWrap .gridjs-td{background:var(--bg);color:#fff;border-color:var(--line2);font-size:12.5px}
+  #tableWrap tr.gridjs-tr:hover .gridjs-td{background:#0C0C0C}
+  #tableWrap .gridjs-search-input{background:#0A0A0A;color:#fff;border:1px solid var(--line);border-radius:3px}
+  #tableWrap .gridjs-search-input::placeholder{color:var(--muted2)}
+  #tableWrap .gridjs-pagination{color:var(--muted)}
+  #tableWrap .gridjs-pagination .gridjs-pages button{background:#0A0A0A;color:#fff;border:1px solid var(--line2)}
+  #tableWrap .gridjs-pagination .gridjs-pages button.gridjs-currentPage{background:#fff;color:#000;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">RYDE</div>
+    <div class="topright"><span style="color:var(--blue)">Porter</span> <span style="color:var(--muted2)">×</span> <span style="color:var(--pink)">Colloquial</span><span class="stamp" id="stamp"></span></div>
+  </div>
+  <div class="lead">Post-Production Status</div>
+  <div class="leadsub">Live from the production tracker · 54 unique edits · 162 delivered files</div>
+
+  <div id="status"><div class="loading"><div class="spin"></div>Loading live data…</div></div>
+
+  <div id="app" style="display:none">
+    <div class="kpis">
+      <div class="kpi ring-kpi"><svg id="ring" width="74" height="74" viewBox="0 0 74 74"></svg>
+        <div class="txt"><div class="label">Overall</div><div class="note">pipeline + exports</div></div></div>
+      <div class="kpi"><div class="label">Unique Edits</div><div class="val">54</div><div class="note">162 files total</div></div>
+      <div class="kpi"><div class="label">Started</div><div class="val" id="kStarted">0</div><div class="note" id="kStartedNote">of 54</div></div>
+      <div class="kpi"><div class="label">Open Feedback</div><div class="val" id="kOpen" style="color:var(--pink)">0</div><div class="note">across all edits</div></div>
+      <div class="kpi"><div class="label">Delivered</div><div class="val" id="kDeliv" style="color:var(--blue)">0</div><div class="note">all 10 milestones</div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><div class="sectitle">Progress by Stage</div><div class="chart-box"><canvas id="cStage"></canvas></div></div>
+      <div class="panel"><div class="sectitle">Recent Feedback</div><div class="fb" id="fbList"></div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><div class="sectitle">Progress by Film</div><div class="chart-box sm"><canvas id="cFilm"></canvas></div></div>
+      <div class="panel"><div class="sectitle">Progress by Language</div><div class="chart-box sm"><canvas id="cLang"></canvas></div></div>
+    </div>
+    <div class="panel full"><div class="sectitle">All Edits</div><div id="tableWrap"></div></div>
+    <div class="foot">
+      <div>Porter × Colloquial</div>
+      <div class="c">Ryde Studio © 2026</div>
+      <div><button class="reload" onclick="load()">↻ Refresh</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== CONFIG — set after Publish to web ====== */
+const PUB_ID='2PACX-1vRfyncMMDCe4hTJs5OvC45Mlfu2mVQJYBEDQ9mflByfI0XKii2PKjUEgGF5rs2bIxGKDddIRBW1EwBf';
+const TRACKER_GID='453256689';
+const FB_GID='1911349167';
+/* =============================================== */
+const csvUrl=g=>`https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=${g}&single=true&output=csv`;
+const STAGES=['Offline Cut','Offline Lock','Sound / Mix','Grade','Online / Conform','Agency Review','Brand Approval','16:9','9:16','1:1'];
+
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function parseCSV(text){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+    else{ if(ch==='"')q=true; else if(ch===','){row.push(cur);cur='';}
+      else if(ch==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+      else if(ch==='\r'){} else cur+=ch; } }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows.map(r=>r.map(c=>c.trim()));
+}
+function findTable(grid,pred){
+  for(let i=0;i<grid.length;i++){ if(pred(grid[i])){
+    const h=grid[i];const rows=[];
+    for(let j=i+1;j<grid.length;j++){ const r=grid[j];
+      if(!r.some(c=>c!==''))break; if((r[0]||'')==='')continue; rows.push(r); }
+    return {h,rows};
+  }} return null;
+}
+function shade(p){p=Math.max(0,Math.min(1,p));return `rgba(30,64,230,${(0.5+0.5*p).toFixed(2)})`;}
+function pillStyle(p){if(p<=0)return 'background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);border-color:transparent';return `background:rgba(30,64,230,${(0.4+0.6*p).toFixed(2)});color:#fff;border-color:transparent`;}
+
+function ring(pct){const r=29,c=2*Math.PI*r,off=c*(1-pct);
+  document.getElementById('ring').innerHTML=
+   `<g transform="translate(37,37) rotate(-90)"><circle r="${r}" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="8"/>
+    <circle r="${r}" fill="none" stroke="#1E40E6" stroke-width="8" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></g>
+    <text x="37" y="42" text-anchor="middle" font-size="17" font-weight="800" fill="#fff">${Math.round(pct*100)}%</text>`;}
+
+let charts=[];
+function hbar(canvas,labels,pcts){
+  charts.push(new Chart(canvas.getContext('2d'),{type:'bar',
+    data:{labels,datasets:[{data:pcts.map(p=>Math.round(p*100)),backgroundColor:pcts.map(shade),borderRadius:2,maxBarThickness:20}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#111',borderColor:'rgba(255,255,255,.2)',borderWidth:1,callbacks:{label:c=>c.parsed.x+'%'}}},
+      scales:{x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%',color:'rgba(255,255,255,.5)',font:{size:10}},grid:{color:'rgba(255,255,255,.07)'},border:{color:'rgba(255,255,255,.12)'}},
+              y:{ticks:{color:'rgba(255,255,255,.82)',font:{size:11}},grid:{display:false},border:{color:'rgba(255,255,255,.12)'}}}}}));
+}
+function renderFeedback(fb){const el=document.getElementById('fbList');
+  if(!fb||!fb.rows.length){el.innerHTML='<div class="empty">No feedback logged yet.</div>';return;}
+  const ix=n=>fb.h.indexOf(n);
+  const items=fb.rows.map(r=>({ts:r[ix('Timestamp')]||'',edit:r[ix('Edit ID')]||'',rev:r[ix('Reviewer')]||'',cm:r[ix('Comment')]||'',st:(r[ix('Status')]||'').toLowerCase(),link:r[ix('Frame.io Link')]||''}));
+  items.sort((a,b)=>{const da=Date.parse(a.ts),db=Date.parse(b.ts);if(isNaN(da)||isNaN(db))return b.ts.localeCompare(a.ts);return db-da;});
+  el.innerHTML=items.slice(0,12).map(it=>{const resolved=it.st&&it.st!=='open';
+    const badge=resolved?'<span class="badge b-res">'+esc(it.st||'done')+'</span>':'<span class="badge b-open">open</span>';
+    const link=/^https?:\/\//.test(it.link)?`<a class="flink" href="${esc(it.link)}" target="_blank" rel="noopener">Frame.io ↗</a>`:'<span></span>';
+    return `<div class="fb-item"><div class="fb-top"><span class="fb-edit">${esc(it.edit)}</span><span class="fb-meta">${esc(it.ts)}</span></div>
+      <div class="fb-comment">${esc(it.cm)||'<span class="fb-meta">(no text)</span>'}</div>
+      <div class="fb-bot"><span class="fb-meta">${esc(it.rev)||'—'} &nbsp; ${badge}</span>${link}</div></div>`;}).join('');
+}
+let gridInst=null;
+function renderTable(tr){const ix=n=>tr.h.indexOf(n);
+  const data=tr.rows.map(r=>{const done=STAGES.filter(s=>r[ix(s)]==='Done').length;const p=done/10;
+    return [r[ix('Edit ID')],r[ix('Film')],r[ix('Language')],r[ix('Edit Type')],Math.round(p*100),r[ix('Last Feedback')]||'',Number(r[ix('Open Comments')]||0)];});
+  document.getElementById('tableWrap').innerHTML='';
+  gridInst=new gridjs.Grid({columns:[{name:'Edit ID'},{name:'Film'},{name:'Lang'},{name:'Type'},
+      {name:'Progress',formatter:c=>gridjs.html(`<span class="pill" style="${pillStyle(c/100)}">${c}%</span>`),sort:{compare:(a,b)=>a-b}},
+      {name:'Last Feedback'},{name:'Open',formatter:c=>gridjs.html(c>0?`<b style="color:#F21C9A">${c}</b>`:'<span style="color:rgba(255,255,255,.35)">0</span>')}],
+    data,search:true,sort:true,pagination:{enabled:true,limit:12},style:{table:{'white-space':'nowrap'}}}).render(document.getElementById('tableWrap'));
+}
+
+async function fetchCsv(g){const res=await fetch(csvUrl(g),{cache:'no-store'});if(!res.ok)throw new Error('Could not fetch the published Sheet (HTTP '+res.status+').');return parseCSV(await res.text());}
+
+async function load(){
+  try{
+    document.getElementById('app').style.display='none';
+    document.getElementById('status').style.display='block';
+    document.getElementById('status').innerHTML='<div class="loading"><div class="spin"></div>Loading live data…</div>';
+    if(PUB_ID.indexOf('REPLACE')===0)throw new Error('Dashboard not yet linked to the Sheet (publish step pending).');
+    const [tg,fg]=await Promise.all([fetchCsv(TRACKER_GID),fetchCsv(FB_GID)]);
+    const tr=findTable(tg,h=>h.includes('Edit ID')&&h.includes('Offline Cut'));
+    const fb=findTable(fg,h=>h.includes('Timestamp')&&h.includes('Frame.io Link'));
+    if(!tr)throw new Error('Could not find the Tracker table.');
+    const ix=n=>tr.h.indexOf(n);const rows=tr.rows;
+    const prog=rows.map(r=>STAGES.filter(s=>r[ix(s)]==='Done').length/10);
+    const overall=prog.reduce((a,b)=>a+b,0)/(rows.length||1);
+    const started=rows.filter(r=>STAGES.some(s=>{const v=r[ix(s)];return v&&v!=='Not Started'&&v!=='N/A';})).length;
+    const delivered=prog.filter(p=>p>=0.999).length;
+    const openFb=fb?fb.rows.filter(r=>(r[fb.h.indexOf('Status')]||'').toLowerCase()==='open').length:0;
+    charts.forEach(c=>c.destroy());charts=[];
+    document.getElementById('status').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('stamp').textContent='Refreshed '+new Date().toLocaleString();
+    ring(overall);
+    document.getElementById('kStarted').textContent=started;
+    document.getElementById('kStartedNote').textContent='of '+rows.length;
+    document.getElementById('kOpen').textContent=openFb;
+    document.getElementById('kDeliv').textContent=delivered;
+    hbar(document.getElementById('cStage'),STAGES,STAGES.map(s=>rows.filter(r=>r[ix(s)]==='Done').length/(rows.length||1)));
+    const films=[...new Set(rows.map(r=>r[ix('Film')]))];
+    hbar(document.getElementById('cFilm'),films.map(f=>f.replace(/^Film \d+ – /,'')),films.map(f=>{const g=rows.filter(r=>r[ix('Film')]===f);return g.reduce((a,r)=>a+STAGES.filter(s=>r[ix(s)]==='Done').length/10,0)/(g.length||1);}));
+    const langs=['Hindi','Tamil','Telugu','Malayalam','Kannada'].filter(l=>rows.some(r=>r[ix('Language')]===l));
+    hbar(document.getElementById('cLang'),langs,langs.map(l=>{const g=rows.filter(r=>r[ix('Language')]===l);return g.reduce((a,r)=>a+STAGES.filter(s=>r[ix(s)]==='Done').length/10,0)/(g.length||1);}));
+    renderFeedback(fb);renderTable(tr);
+  }catch(e){
+    document.getElementById('status').style.display='block';
+    document.getElementById('app').style.display='none';
+    document.getElementById('status').innerHTML='<div class="err"><b>Couldn’t load the dashboard.</b><br>'+esc(e.message||String(e))+'</div>';
+  }
+}
+load();
+</script>
+</body>
+</html>
