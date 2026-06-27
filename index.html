@@ -58,6 +58,21 @@
   @keyframes s{to{transform:rotate(360deg)}}
   .full{margin-top:16px}
   .pill{display:inline-block;min-width:46px;text-align:center;padding:2px 7px;border-radius:3px;font-weight:800;font-size:11px;border:1px solid var(--line2)}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:2px 0 16px;font-size:10.5px;color:var(--muted);letter-spacing:.03em}
+  .lg{display:flex;align-items:center;gap:6px}
+  .cell{display:inline-block;width:22px;height:14px;border-radius:3px;vertical-align:middle}
+  details.film{border-top:1px solid var(--line2)}
+  details.film:first-of-type{border-top:0}
+  details.film summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:13px 2px;font-weight:700;font-size:13px}
+  details.film summary::-webkit-details-marker{display:none}
+  details.film summary::after{content:'+';color:var(--muted);font-weight:400;margin-left:10px;font-size:15px}
+  details.film[open] summary::after{content:'–'}
+  .fmeta{font-size:10.5px;color:var(--muted);font-weight:400;letter-spacing:.04em}
+  .matrix{overflow-x:auto;padding:2px 0 16px}
+  table.mx{border-collapse:separate;border-spacing:5px 4px}
+  table.mx th{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted2);font-weight:700;text-align:center;padding:0 2px}
+  table.mx td{text-align:center;padding:0}
+  table.mx td.lbl,table.mx th.lbl{text-align:left;white-space:nowrap;font-size:11.5px;color:#fff;padding-right:12px;letter-spacing:0;text-transform:none;font-weight:400}
   .foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--ink);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
   .foot div{font-size:11px;letter-spacing:.06em;color:var(--muted)}
   .foot .c{font-weight:700;color:var(--ink)}
@@ -103,6 +118,7 @@
       <div class="panel"><div class="sectitle">Progress by Film</div><div class="chart-box sm"><canvas id="cFilm"></canvas></div></div>
       <div class="panel"><div class="sectitle">Progress by Language</div><div class="chart-box sm"><canvas id="cLang"></canvas></div></div>
     </div>
+    <div class="panel full"><div class="sectitle">By Film — Deliverable Status</div><div id="filmSections"></div></div>
     <div class="panel full"><div class="sectitle">All Edits</div><div id="tableWrap"></div></div>
     <div class="foot">
       <div>Porter × Colloquial</div>
@@ -181,6 +197,38 @@ function renderTable(tr){const ix=n=>tr.h.indexOf(n);
     data,search:true,sort:true,pagination:{enabled:true,limit:12},style:{table:{'white-space':'nowrap'}}}).render(document.getElementById('tableWrap'));
 }
 
+const SHORT={'Offline Cut':'Off','Offline Lock':'Lock','Sound / Mix':'Snd','Grade':'Grd','Online / Conform':'Onl','Agency Review':'Agy','Brand Approval':'Brd','16:9':'16:9','9:16':'9:16','1:1':'1:1'};
+function statusColor(s){switch(s){
+  case 'Done':return '#ffffff';
+  case 'WIP':return '#1E40E6';
+  case 'Int. Review':return 'rgba(30,64,230,.55)';
+  case 'Revisions':return '#F21C9A';
+  case 'Client Review':return 'rgba(242,28,154,.5)';
+  case 'Blocked':return '#F21C9A';
+  case 'N/A':return 'rgba(255,255,255,.04)';
+  default:return 'rgba(255,255,255,.10)';}}
+function cellStyle(s){let css='background:'+statusColor(s)+';';if(s==='Blocked')css+='box-shadow:inset 0 0 0 1.5px #fff;';if(!s||s==='Not Started'||s==='N/A')css+='border:1px solid rgba(255,255,255,.12);';return css;}
+function typeAbbr(t){return t==='6s Cutdown'?'6s':t==='10s P2C'?'P2C':'Master';}
+function renderFilmSections(tr){
+  const ix=n=>tr.h.indexOf(n);
+  const films=[...new Set(tr.rows.map(r=>r[ix('Film')]))];
+  let html='<div class="legend">'+['Not Started','WIP','Int. Review','Revisions','Client Review','Done','Blocked'].map(s=>`<span class="lg"><i class="cell" style="${cellStyle(s)}"></i>${s}</span>`).join('')+'</div>';
+  films.forEach((f,fi)=>{
+    const g=tr.rows.filter(r=>r[ix('Film')]===f);
+    const p=g.reduce((a,r)=>a+STAGES.filter(s=>r[ix(s)]==='Done').length/10,0)/(g.length||1);
+    const open=g.reduce((a,r)=>a+(Number(r[ix('Open Comments')]||0)),0);
+    const head='<tr><th class="lbl">Deliverable</th>'+STAGES.map(s=>`<th>${SHORT[s]}</th>`).join('')+'<th>Fb</th></tr>';
+    const body=g.map(r=>{
+      const lbl=esc(r[ix('Language')]+' · '+typeAbbr(r[ix('Edit Type')]));
+      const cells=STAGES.map(s=>{const v=r[ix(s)]||'Not Started';return `<td><span class="cell" style="${cellStyle(v)}" title="${esc(s)}: ${esc(v)}"></span></td>`;}).join('');
+      const oc=Number(r[ix('Open Comments')]||0);
+      const fb=oc>0?`<span style="color:#F21C9A;font-weight:700">${oc}</span>`:'<span style="color:rgba(255,255,255,.3)">–</span>';
+      return `<tr><td class="lbl">${lbl}</td>${cells}<td>${fb}</td></tr>`;
+    }).join('');
+    html+=`<details class="film"${fi===0?' open':''}><summary><span>${esc(f)}</span><span class="fmeta">${Math.round(p*100)}% · ${g.length} edits${open?` · <span style="color:#F21C9A">${open} open</span>`:''}</span></summary><div class="matrix"><table class="mx"><thead>${head}</thead><tbody>${body}</tbody></table></div></details>`;
+  });
+  document.getElementById('filmSections').innerHTML=html;
+}
 async function fetchCsv(g){const res=await fetch(csvUrl(g),{cache:'no-store'});if(!res.ok)throw new Error('Could not fetch the published Sheet (HTTP '+res.status+').');return parseCSV(await res.text());}
 
 async function load(){
@@ -213,7 +261,7 @@ async function load(){
     hbar(document.getElementById('cFilm'),films.map(f=>f.replace(/^Film \d+ – /,'')),films.map(f=>{const g=rows.filter(r=>r[ix('Film')]===f);return g.reduce((a,r)=>a+STAGES.filter(s=>r[ix(s)]==='Done').length/10,0)/(g.length||1);}));
     const langs=['Hindi','Tamil','Telugu','Malayalam','Kannada'].filter(l=>rows.some(r=>r[ix('Language')]===l));
     hbar(document.getElementById('cLang'),langs,langs.map(l=>{const g=rows.filter(r=>r[ix('Language')]===l);return g.reduce((a,r)=>a+STAGES.filter(s=>r[ix(s)]==='Done').length/10,0)/(g.length||1);}));
-    renderFeedback(fb);renderTable(tr);
+    renderFeedback(fb);renderTable(tr);renderFilmSections(tr);
   }catch(e){
     document.getElementById('status').style.display='block';
     document.getElementById('app').style.display='none';
