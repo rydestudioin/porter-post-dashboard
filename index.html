@@ -213,7 +213,7 @@ function statusColor(s){switch(s){
   case 'N/A':return 'rgba(255,255,255,.04)';
   default:return 'rgba(255,255,255,.10)';}}
 function cellStyle(s){let css='background:'+statusColor(s)+';';if(s==='Blocked')css+='box-shadow:inset 0 0 0 1.5px #fff;';if(!s||s==='Not Started'||s==='N/A')css+='border:1px solid rgba(255,255,255,.12);';return css;}
-function typeAbbr(t){return t==='6s Cutdown'?'6s':t==='10s P2C'?'P2C':'Master';}
+function typeAbbr(t){return t==='6s Cutdown'?'6s':t==='10s P2C'?'P2C':t==='10s'?'10s':t==='Master'?'Master':t;}
 function renderFilmSections(tr){
   const ix=n=>tr.h.indexOf(n);
   const films=[...new Set(tr.rows.map(r=>r[ix('Film')]))];
